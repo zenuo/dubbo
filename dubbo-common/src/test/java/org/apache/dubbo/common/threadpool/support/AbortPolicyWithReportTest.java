@@ -18,8 +18,11 @@ package org.apache.dubbo.common.threadpool.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileNotFoundException;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -43,5 +46,27 @@ public class AbortPolicyWithReportTest {
 
         Thread.sleep(1000);
 
+    }
+
+    @Test
+    public void jStackDumpTest_notExists_fileNotFoundException() throws InterruptedException {
+        final String dumpDirectory = "../dump";
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory="
+                + dumpDirectory
+                + "&version=1.0.0&application=morgan&noValue");
+        AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
+
+        try {
+            abortPolicyWithReport.rejectedExecution(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("hello");
+                }
+            }, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
+        } catch (RejectedExecutionException rj) {
+            // ignore
+        }
+
+        Thread.sleep(1000);
     }
 }
